@@ -8,15 +8,19 @@ import img_part_headphone from '@res/part_headphone.png';
 import img_part_cpu from '@res/part_gpu.png';
 import img_part_connector from '@res/part_connector.png';
 import img_part_camera from '@res/part_camera.png';
+import img_part_camera_small from '@res/part_camera_small.png';
 import img_part_battery from '@res/part_battery.png';
 import img_part_nvme_large from '@res/part_nvme_large.png';
 import img_part_nvme_small from '@res/part_nvme_small.png';
 import img_part_volume from '@res/part_volume.png';
 import img_part_power from '@res/part_power.png';
+import img_part_multi_jack from '@res/part_multi_jack.png';
+import img_part_wire from '@res/part_wire.png';
+import img_part_corner from '@res/part_corner.png';
 
 import Phone from './Phone';
 import { SCREEN_HEIGHT, SCREEN_WIDTH, CELL_SIZE } from './Constants';
-import Part, { PartDef, PartProps } from './Part';
+import Part, { PartDef, PartProps, PartBound as B } from './Part';
 // import img_desk_phone from '@res/desk_phone.png';
 
 interface BuildState {
@@ -40,21 +44,42 @@ const positionOffsets = [
 
 const batteryPart: PartDef = {
 	img: img_part_battery,
-	size: [
-		[ true, true, true ],
-		[ true, true, true ],
-		[ true, true, true ],
-		[ true, true, true ]
+	bounds: [
+		[ B.Solid, B.Solid, B.Solid ],
+		[ B.Solid, B.Solid, B.Solid ],
+		[ B.Solid, B.Solid, B.Solid ],
+		[ B.Solid, B.Solid, B.Solid ]
 	],
 	connectors: [ [ 0, 0, 0 ] ],
 	model: 'BAT 3000 mah',
 	type: 'battery',
 }
 
+const wirePart: PartDef = {
+	img: img_part_wire,
+	bounds: [
+		[ B.Solid ]
+	],
+	connectors: [ [ 0, 0, 0 ], [ 0, 0, 2 ] ],
+	model: 'Wire',
+	type: 'wire',
+}
+
+const cornerPart: PartDef = {
+	img: img_part_corner,
+	bounds: [
+		[ B.Solid, B.Solid ],
+		[ B.Solid, B.Solid ]
+	],
+	connectors: [ [ 0, 0, 3 ], [ 1, 1, 2 ] ],
+	model: 'RGB Gamer Corner Connector Mega',
+	type: 'wire',
+}
+
 const nvmeLargePart: PartDef = {
 	img: img_part_nvme_large,
-	size: [
-		[ true, true, true ]
+	bounds: [
+		[ B.Solid, B.Solid, B.Solid ]
 	],
 	connectors: [ [ 2, 0, 1 ] ],
 	model: 'Supr NVMe SSD 512GB',
@@ -63,8 +88,8 @@ const nvmeLargePart: PartDef = {
 
 const nvmeSmallPart: PartDef = {
 	img: img_part_nvme_small,
-	size: [
-		[ true, true ]
+	bounds: [
+		[ B.Solid, B.Solid ]
 	],
 	connectors: [ [ 1, 0, 1 ] ],
 	model: 'Supr NVMe SSD 256GB',
@@ -73,41 +98,64 @@ const nvmeSmallPart: PartDef = {
 
 const volumePart: PartDef = {
 	img: img_part_volume,
-	size: [
-		[ true, true ],
-		[ true, true ]
+	bounds: [
+		[ B.Outside, B.Solid ],
+		[ B.Outside, B.Solid ]
 	],
-	connectors: [ [ 1, 0, 0 ], [ 1, 1, 1 ] ],
+	connectors: [ [ 1, 0, 0 ], [ 1, 1, 1 ], [ 1, 1, 2 ] ],
 	model: 'Volume Rocker',
 	type: 'input',
 }
 
 const powerPart: PartDef = {
 	img: img_part_power,
-	size: [
-		[ true, true ]
+	bounds: [
+		[ B.Outside, B.Solid ]
 	],
 	connectors: [ [ 1, 0, 2 ] ],
 	model: 'Power Button',
 	type: 'input',
 }
 
+const multiJackPart: PartDef = {
+	img: img_part_multi_jack,
+	bounds: [
+		[ B.Solid, B.Transparent, B.Transparent ],
+		[ B.Solid, B.Solid, B.Solid ],
+		[ B.Outside, B.Outside, B.Outside ]
+	],
+	connectors: [ [ 1, 1, 0 ], [ 0, 1, 3 ] ],
+	model: 'PowCo Multi-Jack Compact Assembly',
+	type: 'power',
+}
+
 const cameraPart: PartDef = {
 	img: img_part_camera,
-	size: [
-		[ true, true ],
-		[ true, true ]
+	bounds: [
+		[ B.Solid, B.Solid ],
+		[ B.Solid, B.Solid ]
 	],
 	connectors: [ [ 1, 0, 1 ], [ 0, 1, 3 ] ],
-	model: 'Di-cam Super 64 MB',
+	model: 'Di-cam Super 64 MP',
+	type: 'camera',
+}
+
+const cameraSmallPart: PartDef = {
+	img: img_part_camera_small,
+	bounds: [
+		[ B.Solid ],
+		[ B.Solid ]
+	],
+	connectors: [ [ 0, 1, 2 ], [ 0, 0, 1 ] ],
+	model: 'Mono-Lite Budget 5 MP',
 	type: 'camera',
 }
 
 const cpuPart: PartDef = {
 	img: img_part_cpu,
-	size: [
-		[ true, true ],
-		[ true, true ],
+	bounds: [
+		[ B.Solid, B.Solid ],
+		[ B.Solid, B.Solid ],
 	],
 	connectors: [
 		[ 0, 0, 0 ],
@@ -128,8 +176,8 @@ export default function BuilderScene() {
 		useState<[ number, number ]>([ window.innerWidth, window.innerHeight ]);
 
 	const [ buildState, setBuildState ] = useState<BuildState>({
-		gridWidth: 5,
-		gridHeight: 8
+		gridWidth: 4,
+		gridHeight: 6
 	});
 
 	const [ parts, setParts ] = useState<PartProps[]>([
@@ -137,6 +185,30 @@ export default function BuilderScene() {
 			...cpuPart,
 			orientation: 0,
 			pos: [ 1, 1 ],
+			state: 'valid'
+		},
+		{
+			...wirePart,
+			orientation: 0,
+			pos: [ 0, 0 ],
+			state: 'valid'
+		},
+		{
+			...cornerPart,
+			orientation: 0,
+			pos: [ -2, 0 ],
+			state: 'valid'
+		},
+		{
+			...wirePart,
+			orientation: 0,
+			pos: [ 1, 0 ],
+			state: 'valid'
+		},
+		{
+			...wirePart,
+			orientation: 0,
+			pos: [ 2, 0 ],
 			state: 'valid'
 		},
 		{
@@ -152,15 +224,27 @@ export default function BuilderScene() {
 			state: 'disconnected'
 		},
 		{
+			...cameraSmallPart,
+			orientation: 0,
+			pos: [ 2, 5 ],
+			state: 'disconnected'
+		},
+		{
 			...powerPart,
 			orientation: 0,
-			pos: [ -1, 0 ],
+			pos: [ -1, 1 ],
 			state: 'disconnected'
 		},
 		{
 			...volumePart,
 			orientation: 0,
-			pos: [ -1, 1 ],
+			pos: [ -1, 2 ],
+			state: 'disconnected'
+		},
+		{
+			...multiJackPart,
+			orientation: 0,
+			pos: [ 5, 0 ],
 			state: 'disconnected'
 		},
 		{
@@ -328,10 +412,20 @@ export default function BuilderScene() {
 				}
 
 				for (let part of newParts) {
-					if (part.pos[0] < 0 || part.pos[1] < 0 || part.pos[0] + part.size[0].length > buildState.gridWidth ||
-						part.pos[1] + part.size.length > buildState.gridHeight) {
-						part.state = 'out-of-bounds';
+					for (let x = 0; x < part.bounds[0].length; x++) {
+						if (part.state === 'out-of-bounds') break;
+						for (let y = 0; y < part.bounds.length; y++) {
+							let bound = part.bounds[y][x];
+							let outOfBounds = (part.pos[0] + x) < 0 || (part.pos[1] + y) < 0 ||
+								(part.pos[0] + x) >= buildState.gridWidth || (part.pos[1] + y) >= buildState.gridHeight;
+
+							if ((bound === B.Outside && !outOfBounds) || (bound !== B.Outside && outOfBounds)) {
+								part.state = 'out-of-bounds';
+								break;
+							}
+						}
 					}
+
 				}
 
 				for (let i = 0; i < newParts.length; i++) {
@@ -341,14 +435,14 @@ export default function BuilderScene() {
 						if (part.state == 'invalid') break;
 						let other = newParts[j];
 
-						for (let posY = 0; posY < part.size.length; posY++) {
+						for (let posY = 0; posY < part.bounds.length; posY++) {
 							if (part.state == 'invalid') break;
 							let otherPosY = part.pos[1] + posY - other.pos[1];
-							for (let posX = 0; posX < part.size[0].length; posX++) {
+							for (let posX = 0; posX < part.bounds[0].length; posX++) {
 								let otherPosX = part.pos[0] + posX - other.pos[0];
-								if (!part.size[posY][posX]) continue;
-								if (otherPosY < 0 || otherPosY >= other.size.length || otherPosX < 0 || otherPosX >= other.size[0].length) continue;
-								if (other.size[otherPosY][otherPosX]) {
+								if (part.bounds[posY][posX] === B.Transparent) continue;
+								if (otherPosY < 0 || otherPosY >= other.bounds.length || otherPosX < 0 || otherPosX >= other.bounds[0].length) continue;
+								if (other.bounds[otherPosY][otherPosX] != B.Transparent) {
 									part.state = 'invalid';
 									break;
 								}
@@ -404,22 +498,22 @@ export default function BuilderScene() {
 
 			part.orientation = (part.orientation + 1) % 4;
 
-			const newSize: boolean[][] = [];
-			for (let i = 0; i < part.size[0].length; i++) {
-				const newArr: boolean[] = [];
-				for (let j = 0; j < part.size.length; j++) newArr[j] = false;
-				newSize[i] = newArr;
+			const newBounds: B[][] = [];
+			for (let i = 0; i < part.bounds[0].length; i++) {
+				const newArr: B[] = [];
+				for (let j = 0; j < part.bounds.length; j++) newArr[j] = B.Transparent;
+				newBounds[i] = newArr;
 			}
-			for (let i = 0; i < part.size.length; i++) {
-				for (let j = 0; j < part.size[0].length; j++) {
-					newSize[j][newSize[0].length - 1 - i] = part.size[i][j];
+			for (let i = 0; i < part.bounds.length; i++) {
+				for (let j = 0; j < part.bounds[0].length; j++) {
+					newBounds[j][newBounds[0].length - 1 - i] = part.bounds[i][j];
 				}
 			}
-			part.size = newSize;
+			part.bounds = newBounds;
 
 			const newConnectors: [ number, number, number ][] = [];
 			for (let connecter of part.connectors) {
-				newConnectors.push([ newSize[0].length - 1 - connecter[1], connecter[0], (connecter[2] + 1) % 4 ]);
+				newConnectors.push([ newBounds[0].length - 1 - connecter[1], connecter[0], (connecter[2] + 1) % 4 ]);
 			}
 			part.connectors = newConnectors;
 

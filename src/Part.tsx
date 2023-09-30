@@ -5,9 +5,15 @@ import { CELL_SIZE } from './Constants';
 import { useRef } from 'preact/hooks';
 import { classes, range } from './Util';
 
-export type PartType = 'storage' | 'cpu' | 'battery' | 'wire' | 'camera' | 'input';
+export type PartType = 'storage' | 'cpu' | 'battery' | 'wire' | 'camera' | 'input' | 'power';
 
 export type PartState = 'valid' | 'invalid' | 'disconnected' | 'dragging' | 'drag-indicator' | 'out-of-bounds';
+
+export enum PartBound {
+	Solid,
+	Transparent,
+	Outside
+}
 
 export interface PartDef {
 	model: string;
@@ -17,7 +23,7 @@ export interface PartDef {
 	img: string | string[];
 
 	/* 2d array of occupied cells. */
-	size: boolean[][];
+	bounds: PartBound[][];
 
 	/** array of tuples where [0] = x, [1] = y, [2] = orientation */
 	connectors: [ number, number, number ][];
@@ -102,8 +108,8 @@ export default function Part(props: Props) {
 			style={{
 				left: `${props.phoneX + props.pos[0] * CELL_SIZE}px`,
 				top: `${props.phoneY + props.pos[1] * CELL_SIZE}px`,
-				width: `${props.size[0].length * CELL_SIZE}px`,
-				height:	`${props.size.length * CELL_SIZE}px`,
+				width: `${props.bounds[0].length * CELL_SIZE}px`,
+				height:	`${props.bounds.length * CELL_SIZE}px`,
 				...(props.style ?? {})
 			}}
 			onMouseDown={handleMouseDown}
@@ -118,7 +124,7 @@ export default function Part(props: Props) {
 						// ? 'grayscale(100%) contrast(0.7) brightness(1.3)'
 						// :
 						props.state === 'invalid'
-							? 'grayscale(100%) sepia(100%) brightness(2) saturate(500%) hue-rotate(324deg)'
+							? 'grayscale(100%) sepia(100%) contrast(0.8) brightness(1.6) saturate(500%) hue-rotate(324deg)'
 							: '',
 					opacity: props.state === 'invalid' || props.state === 'dragging'
 						? 0.8
@@ -128,10 +134,10 @@ export default function Part(props: Props) {
 				}}
 				src={Array.isArray(props.img) ? props.img[props.orientation] : props.img}
 			/>
-			{range(props.size.length * props.size[0].length).map(i => {
-				const x = i % props.size[0].length;
-				const y = Math.floor(i / props.size[0].length);
-				if (props.size[y][x]) {
+			{range(props.bounds.length * props.bounds[0].length).map(i => {
+				const x = i % props.bounds[0].length;
+				const y = Math.floor(i / props.bounds[0].length);
+				if (props.bounds[y][x] != PartBound.Transparent) {
 					return <div style={{
 						position: 'absolute',
 						width: `${CELL_SIZE}px`,
