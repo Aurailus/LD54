@@ -7,12 +7,16 @@ import { useEffect, useMemo, useState } from 'preact/hooks';
 import level0 from '../levels/0_Tutorial';
 import level1 from '../levels/1_FirstLevel';
 import level2 from '../levels/2_SecondLevel';
+import level3 from '../levels/3_ThirdLevel';
+import level4 from '../levels/4_FinalLevel';
 import { Level } from '../levels/Level';
 
 const LEVELS = [
 	level0,
 	level1,
-	level2
+	level2,
+	level3,
+	level4
 ];
 
 export interface Score {

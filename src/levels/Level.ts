@@ -10,6 +10,7 @@ export type CompletionRequirement =
 	'has_storage' |
 	'has_input' |
 	'has_battery' |
+	'has_misc' |
 	'all_valid' |
 	'time_limit' |
 	'budget_limit' |

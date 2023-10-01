@@ -102,7 +102,7 @@ export default function* level(): Level {
 
 	yield {
 		type: 'score_min',
-		score: 10500
+		score: 9000
 	};
 
 	yield {

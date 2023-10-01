@@ -267,7 +267,7 @@ export const PART_REGISTRY: Record<PartType, PartDef[]> = {
 			type: 'wire',
 			model: 'RGamerB Corner Connector Mega',
 			description: 'Connects two distant components, DIAGONALLY!',
-			level: 5,
+			level: 4,
 			score: 0,
 			price: 10,
 
@@ -285,7 +285,7 @@ export const PART_REGISTRY: Record<PartType, PartDef[]> = {
 			type: 'wire',
 			model: 'RGamerB C-Type Connector Super',
 			description: 'Connects two distant components via a proprietary C-type connector piece.',
-			level: 5,
+			level: 4,
 			score: 0,
 			price: 10,
 
@@ -449,9 +449,9 @@ export const PART_REGISTRY: Record<PartType, PartDef[]> = {
 			type: 'misc',
 			model: 'Heatsink',
 			description: 'A heatsink',
-			level: 10,
-			score: 0,
-			price: 2,
+			level: 4,
+			score: 250,
+			price: 10,
 
 			img: [ img_part_heatsink, img_part_heatsink_side_b, img_part_heatsink_side_c, img_part_heatsink_side_a ],
 			bounds: [

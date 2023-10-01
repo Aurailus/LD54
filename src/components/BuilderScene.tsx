@@ -427,6 +427,7 @@ export default function BuilderScene(props: Props) {
 				case 'has_battery':
 				case 'has_input':
 				case 'has_power':
+				case 'has_misc':
 				case 'has_camera':
 				case 'has_cpu': {
 					const type = req[0].substring(4);
