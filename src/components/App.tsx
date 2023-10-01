@@ -39,10 +39,11 @@ export default function App() {
 	const [ score, setScore ] = useState<Score>({ score: 0, grade: 'F', budget: 0 });
 
 	function handleContinue() {
-		localStorage.setItem('54_level', (level + 1).toString());
-		setLevel(level + 1);
+		const newLevel = (level === LEVELS.length - 1) ? 0 : level + 1;
+		localStorage.setItem('54_level', newLevel.toString());
+		setLevel(newLevel);
 		setView('game');
-		setLevelFn(LEVELS[level + 1]());
+		setLevelFn(LEVELS[newLevel]());
 	}
 
 	function handleRetry() {
@@ -78,9 +79,10 @@ export default function App() {
 					pixelScale={pixelScale}
 					score={score.score}
 					grade={score.grade}
-					canContinue={score.grade !== 'F' && level + 1 < LEVELS.length}
+					canContinue={score.grade !== 'F' || level >= LEVELS.length -1}
 					onContinue={handleContinue}
 					onRetry={handleRetry}
+					reset={level === LEVELS.length - 1}
 				/>
 			}
 		</Fragment>

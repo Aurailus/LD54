@@ -8,7 +8,7 @@ interface Props {
 	score: number;
 	grade: string;
 	canContinue: boolean;
-
+	reset: boolean;
 	onContinue: () => void;
 	onRetry: () => void;
 }
@@ -44,7 +44,7 @@ export default function ScoreScreen(props: Props) {
 						<div class='flex gap-1 pl-3 pt-3'>
 							<button
 								onClick={props.canContinue ? props.onContinue : undefined}
-								disabled={!props.canContinue} class='bg-blue-900/30 text-blue-900/90 font-mono text-[10px] px-1 py-0.5 disabled:text-white disabled:pointer-events-none disabled:opacity-30'>Continue</button>
+								disabled={!props.canContinue} class='bg-blue-900/30 text-blue-900/90 font-mono text-[10px] px-1 py-0.5 disabled:text-white disabled:pointer-events-none disabled:opacity-30'>{props.reset ? 'Reset Progress' : 'Continue'}</button>
 							<button
 								onClick={props.onRetry}
 							class='bg-blue-900/30 text-blue-900/90 font-mono text-[10px] px-1 py-0.5'>Retry</button>
