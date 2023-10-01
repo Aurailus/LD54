@@ -33,21 +33,21 @@ export default function ScoreScreen(props: Props) {
 					<img src={img_score_phone} class='[filter:drop-shadow(0px_8px_6px_rgb(0_0_0/50%))]'/>
 					<div class='m-6 mr-10 absolute inset-0'>
 
-						<p class='font-mono font-black p-1 px-3 text-blue-900/90'>{props.grade !== 'F' ? 'Product Shipped!' : 'Product Fail!'}</p>
+						<p class='font-mono font-black p-1 px-3 text-blue-900/90'>{props.reset ? 'Game Complete!' : props.grade !== 'F' ? 'Product Shipped!' : 'Product Fail!'}</p>
 						<p class='font-mono font-black px-3 text-[10px] text-blue-900/75 leading-tight'>Revenue: ${
 							(props.score * 1000).toLocaleString('en-us', { maximumFractionDigits: 0, useGrouping: true })}</p>
 						<p class='font-mono font-black px-3 text-[10px] text-blue-900/75 leading-tight'>Review Avg: {(ranking as any)[props.grade.toLowerCase()]} Stars</p>
 
 						<p class='font-mono font-black px-3 text-[10px] text-blue-900/75 leading-tight pt-3'>Your Ranking:</p>
-						<p class='font-mono font-black text-5xl -my-1 text-blue-900 px-3'>{props.grade}</p>
+						<p class='font-mono font-black text-5xl -my-1 text-blue-900 px-3'>{props.reset ? 'EPIC' : props.grade}</p>
 
 						<div class='flex gap-1 pl-3 pt-3'>
 							<button
 								onClick={props.canContinue ? props.onContinue : undefined}
 								disabled={!props.canContinue} class='bg-blue-900/30 text-blue-900/90 font-mono text-[10px] px-1 py-0.5 disabled:text-white disabled:pointer-events-none disabled:opacity-30'>{props.reset ? 'Reset Progress' : 'Continue'}</button>
-							<button
+							<button disabled={props.reset}
 								onClick={props.onRetry}
-							class='bg-blue-900/30 text-blue-900/90 font-mono text-[10px] px-1 py-0.5'>Retry</button>
+							class='bg-blue-900/30 text-blue-900/90 font-mono text-[10px] px-1 py-0.5 disabled:text-white disabled:pointer-events-none disabled:opacity-30'>Retry</button>
 						</div>
 					</div>
 

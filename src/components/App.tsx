@@ -19,6 +19,16 @@ const LEVELS = [
 	level4
 ];
 
+function getPixelScale() {
+	if (window.innerWidth >= 2400 && window.innerHeight >= 1200 ) {
+		return 4;
+	}
+	if (window.innerWidth >= 1600 && window.innerHeight >= 900) {
+		return 3;
+	}
+	return 2;
+}
+
 export interface Score {
 	score: number;
 	grade: string;
@@ -57,7 +67,7 @@ export default function App() {
 		setView('score');
 	}
 
-	const pixelScale = 3;
+	const pixelScale = getPixelScale();
 
 	useEffect(() => {
 		const resizeEvent = () => setReload(r => r + 1);

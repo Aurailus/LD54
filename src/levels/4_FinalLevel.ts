@@ -34,7 +34,6 @@ export default function* level(): Level {
 			'And I\'m gonna make the most [i][u]stylish[/u][/i] medical equipment in the industry!',
 			'So see you around, [w]sucker[/w]!',
 			'...',
-			'...',
 			'[u]THANKS FOR PLAYING MY GAME! (this text is non-diagetic)[/u]',
 			'[u]Hope you enjoyed it very much~[/u]',
 			'Made by [u]Auri Collings (@Aurailus)[/u] in 48 hours for the [w]Ludum Dare 54 Compo![/w]',

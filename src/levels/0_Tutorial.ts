@@ -6,7 +6,7 @@ export default function* level(): Level {
 
 	yield {
 		type: 'score_min',
-		score: 4000
+		score: 2256
 	}
 
 	yield {
@@ -155,7 +155,7 @@ export default function* level(): Level {
 	let earlySuccess = false;
 	while (true) {
 		let res = (yield { type: 'wait', until: [ 'placement' ] }).part.state;
-		if (res === 'unconnected' || res === 'invalid') {
+		if (res === 'unconnected' || res === 'out-of-bounds' || res === 'invalid') {
 			yield {
 				type: 'message',
 				messages: [

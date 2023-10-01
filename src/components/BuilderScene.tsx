@@ -502,7 +502,7 @@ export default function BuilderScene(props: Props) {
 			onContextMenu={movingPart ? rotateMovingPart : undefined}
 			>
 
-			<img src={img_desk_background} class='absolute pointer-events-none'/>
+			<div style={{ backgroundImage: `url(${img_desk_background})`, width: SCREEN_WIDTH * 3, height: SCREEN_HEIGHT * 3, top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }} class='absolute pointer-events-none'/>
 
 			<Status
 				pixelScale={props.pixelScale}
