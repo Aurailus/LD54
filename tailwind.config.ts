@@ -23,6 +23,7 @@ module.exports = {
         'slide-in': 'slide-in 0.5s ease 1 forwards',
         'slide-in-fast': 'slide-in-fast 0.3s ease 1 forwards',
         'slide-out': 'slide-out 0.2s ease 1 forwards',
+        'ringing': 'ringing 0.5s linear infinite'
       },
       keyframes: {
         'letter-in': {
@@ -90,6 +91,15 @@ module.exports = {
         'slide-out': {
           'from': { opacity: 1, transform: 'translateY(0px)' },
           'to': { opacity: 0, transform: 'translateY(20px)' },
+        },
+        'ringing': {
+          'from': { transform: 'translateY(0px)' },
+          '50%': { transform: 'translateY(0px)' },
+          '50.1%': { transform: 'translateY(-5px) rotate(10deg)' },
+          '75%': { transform: 'translateY(-5px) rotate(10deg)' },
+          '75.1%': { transform: 'translateY(-3px) rotate(-10deg)' },
+          '99%': { transform: 'translateY(-3px) rotate(-10deg)' },
+          '99.1%': { transform: 'translateY(0px)' },
         }
       }
 		},

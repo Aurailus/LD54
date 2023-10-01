@@ -20,6 +20,7 @@ import img_part_heatsink_side_a from '@res/part_heatsink_side_a.png';
 import img_part_heatsink_side_b from '@res/part_heatsink_side_b.png';
 import img_part_heatsink_side_c from '@res/part_heatsink_side_c.png';
 import img_part_c from '@res/part_c.png';
+import img_part_chip from '@res/part_chip.png';
 
 import img_category_cpu from '@res/category_cpu.png';
 import img_category_storage from '@res/category_storage.png';
@@ -42,7 +43,7 @@ export type PartType =
 
 interface PartTypeMeta {
 	multi: boolean;
-	scoring: 'cumulative' | 'max' | 'avg' | 'min';
+	scoring: 'cumulative' | 'max' | 'avg';
 	icon: string;
 }
 
@@ -210,7 +211,7 @@ export const PART_REGISTRY: Record<PartType, PartDef[]> = {
 			type: 'battery',
 			model: 'BAT 5000 mAh',
 			description: '5000 mAh Lithium-Ion Battery. Standard rectangular form factor.',
-			level: 2,
+			level: 3,
 			score: 5000,
 			price: 30,
 
@@ -303,8 +304,8 @@ export const PART_REGISTRY: Record<PartType, PartDef[]> = {
 			type: 'camera',
 			model: 'Di-cam Super 64 MP',
 			description: 'Best image quality for the price on the market, 64 MP AI-enhanced dual-lens camera component.',
-			level: 2,
-			score: 64,
+			level: 3,
+			score: 64 * 100,
 			price: 30,
 
 			img: img_part_camera,
@@ -321,8 +322,8 @@ export const PART_REGISTRY: Record<PartType, PartDef[]> = {
 			type: 'camera',
 			model: 'Mono-Lite Budget 5 MP',
 			description: 'Budged camera component for lower-end devices, 5 MP single-lens.',
-			level: 2,
-			score: 5,
+			level: 3,
+			score: 58 * 100,
 			price: 5,
 
 			img: img_part_camera_small,
@@ -338,7 +339,7 @@ export const PART_REGISTRY: Record<PartType, PartDef[]> = {
 			type: 'input',
 			model: 'Volume Rocker',
 			description: 'Standard volume rocker.',
-			level: 2,
+			level: 4,
 			score: 500,
 			price: 2,
 
@@ -357,7 +358,7 @@ export const PART_REGISTRY: Record<PartType, PartDef[]> = {
 			type: 'input',
 			model: 'Power Button',
 			description: 'Standard power button.',
-			level: 2,
+			level: 4,
 			score: 500,
 			price: 2,
 
@@ -374,7 +375,7 @@ export const PART_REGISTRY: Record<PartType, PartDef[]> = {
 			model: 'SecurTek Backmounted Fingerprint Reader',
 			description: 'Uses the finest MD5 encryption to secure biometric data.',
 			level: 2,
-			score: 1500,
+			score: 500,
 			price: 30,
 
 			img: img_part_fingerprint_reader,
@@ -457,6 +458,18 @@ export const PART_REGISTRY: Record<PartType, PartDef[]> = {
 				[ B.Solid, B.Solid ]
 			],
 			connectors: [],
+		},
+		{
+			type: 'misc',
+			model: 'Chip',
+			description: '',
+			level: 10,
+			score: 0,
+			price: 0,
+
+			img: img_part_chip,
+			bounds: [ [ B.Solid ] ],
+			connectors: []
 		}
 	]
 }

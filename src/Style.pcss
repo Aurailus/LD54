@@ -30,3 +30,15 @@ img {
 .blueprint-scroll::-webkit-scrollbar-thumb {
 	background-color: rgb(255 255 255 / 30%);
 }
+
+.click-target + img + img {
+	opacity: 0;
+}
+
+.click-target:active + img + img {
+	opacity: 1;
+}
+
+.click-target:active + img {
+	opacity: 0;
+}

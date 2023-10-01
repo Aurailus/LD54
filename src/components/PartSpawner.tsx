@@ -1,4 +1,4 @@
-import { h } from 'preact';
+import { Fragment, h } from 'preact';
 import { useLayoutEffect, useState } from 'preact/hooks';
 
 import { PART_REGISTRY, PART_TYPE_META, PartDef, PartType } from '../Parts';
@@ -11,6 +11,8 @@ import img_blueprint_grid from '@res/blueprint_grid.png';
 interface Props {
 	level: number;
 	pixelScale: number;
+	highlightCategories: PartType[];
+	hasAtleastOne: PartType[];
 
 	onMoveStart: (evt: MouseEvent, part: PartDef) => void;
 	onMoveEnd: () => void;
@@ -21,14 +23,6 @@ export default function PartSpawner(props: Props) {
 	const [ selectedType, setSelectedType ] = useState<PartType>(Object.entries(PART_TYPE_META)[0][0] as PartType);
 
 	useLayoutEffect(() => setSelectedType((Object.entries(PART_REGISTRY).find(([ type, def ]) => !!def.find(def => def.level <= props.level))?? [ 'cpu' ])[0] as PartType), [ props.level ]);
-
-	const unmetRequirements: Record<string, any> = {
-		// cpu: true,
-		// storage: true,
-		// camera: true,
-		// battery: true,
-		// misc: true
-	}
 
 	let active = props.level >= 0;
 
@@ -47,7 +41,7 @@ export default function PartSpawner(props: Props) {
 						<button
 							title={type}
 							key={type}
-							class={classes(unmetRequirements[type]
+							class={classes(props.highlightCategories.includes(type as PartType)
 									? selectedType === type
 										? 'bg-[#FBF1E4] border-white'
 										: 'bg-[#F0D1A7]/50 border-transparent'
@@ -60,7 +54,7 @@ export default function PartSpawner(props: Props) {
 						>
 							<img class={classes('w-full h-full pointer-events-none')}
 								style={{ filter:
-									unmetRequirements[type]
+									props.highlightCategories.includes(type as PartType)
 										?	type === selectedType
 											? 'grayscale(100%) sepia(100%) hue-rotate(-6deg) saturate(1.6) contrast(0.9) brightness(2) saturate(.8)'
 											: 'grayscale(100%) sepia(100%) hue-rotate(-6deg) saturate(1.6) contrast(0.9) brightness(1.5)'
@@ -80,8 +74,12 @@ export default function PartSpawner(props: Props) {
 								<p class='text-[8px] font-mono font-black text-white leading-[8px]'>{part.model}</p>
 								<p class='text-[5px] pt-[4px] font-mono font-semibold text-blue-200 leading-[6px]'>{part.description}</p>
 								<p class='uppercase text-[6px] font-mono font-black text-blue-100 leading-none pt-1'>
-									COST:<span class='inline-block w-px'/>${part.price.toLocaleString('en-US',
-										{ currency: 'CAD', maximumFractionDigits: 0, useGrouping: true })}
+									{
+										(!PART_TYPE_META[selectedType].multi && props.hasAtleastOne.indexOf(selectedType) !== -1)
+										? <p class='text-red-200'>CANNOT PURCHASE</p>
+										:	<Fragment>COST:<span class='inline-block w-px'/>${part.price.toLocaleString('en-US',
+											{ currency: 'CAD', maximumFractionDigits: 0, useGrouping: true })}</Fragment>
+										}
 								</p>
 							</div>
 							<div class='w-[96px] relative m-2 mt-1.5 mb-4 shrink-0'>
@@ -92,7 +90,7 @@ export default function PartSpawner(props: Props) {
 									pos={[ 0, 0 ]}
 									state='blueprint'
 									uid={i.toString()}
-									onMoveStart={(evt) => props.onMoveStart(evt, part)}
+									onMoveStart={(!PART_TYPE_META[selectedType].multi && props.hasAtleastOne.indexOf(selectedType) !== -1)? undefined: (evt) => props.onMoveStart(evt, part)}
 									onMoveEnd={props.onMoveEnd}
 									// onRotate={() => props.onRotate()}
 								/>
