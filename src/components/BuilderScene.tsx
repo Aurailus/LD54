@@ -1,5 +1,5 @@
 import { Fragment, h } from 'preact';
-import { useEffect, useRef, useState } from 'preact/hooks';
+import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
 
 import img_desk_background from '@res/desk_background.png';
 import img_desk_landline from '@res/desk_landline.png';
@@ -32,6 +32,9 @@ const positionOffsets = [
 interface Props {
 	level: Level;
 }
+
+type CompletionRequirement  = 'cpu' | 'camera' | 'battery' | 'memory' | 'input' | 'power';
+
 function rotatePart(part: PartProps, orientation: number) {
 	let numRotations = (orientation + 4 - part.orientation) % 4;
 	for (let i = 0; i < numRotations; i++) {
@@ -69,13 +72,14 @@ export default function BuilderScene(props: Props) {
 	const [ phoneSize, setPhoneSize ] = useState<[ number, number ] | null>(null);
 	const [ parts, setParts ] = useState<PartProps[]>([]);
 	const [ phoneVisible, setPhoneVisible ] = useState<boolean | 'out'>();
+	const [ completionRequirements, setCompletionRequirements ] = useState<[ CompletionRequirement, boolean ][]>([]);
 
 	const [ movingPart, setMovingPart ] = useState<MovingPart | null>(null);
 	const mousePos = useRef<[ number, number ]>([ 0, 0 ]);
 
 	const pixelScale = 3;
 
-	function handleLevelDirective(ret?: any) {
+	const handleLevelDirective = useCallback((ret?: any) => {
 		let { value: directive, done } = props.level.next(ret);
 
 		if (done) console.warn('done!');
@@ -119,7 +123,6 @@ export default function BuilderScene(props: Props) {
 					case 'lock_all': {
 						setParts(parts => {
 							const newParts = parts.map(p => ({ ...p, immobile: true }));
-							console.log(newParts);
 							return newParts;
 						});
 						break;
@@ -140,7 +143,7 @@ export default function BuilderScene(props: Props) {
 				break;
 			}
 		}
-	}
+	}, [ props.level ]);
 
 	useEffect(() => handleLevelDirective(), [ props.level ]);
 
@@ -237,117 +240,118 @@ export default function BuilderScene(props: Props) {
 		});
 	}
 
-	function handleMoveEnd() {
-		setMovingPart((movingPart) => {
-			setParts((parts) => {
-				let newParts: PartProps[] = [];
+	const handleMoveEnd = useCallback(() => {
+		let newParts: PartProps[] = [];
+		const queue: PartProps[] = [];
+		const closed = new Set<PartProps>();
 
-				const queue: PartProps[] = [];
-				const closed = new Set<PartProps>();
+		for (let part of parts) {
+			if (movingPart?.willRemove && part === movingPart.part) continue;
+			const isCPU = part.type === 'cpu';
+			const newPart: PartProps = { ...part, state: isCPU || (part.connectors ?? []).length === 0
+				? 'valid' : 'disconnected' };
+			newParts.push(newPart);
+			if (isCPU) queue.push(newPart);
+		}
 
-				for (let part of parts) {
-					if (movingPart?.willRemove && part === movingPart.part) continue;
-					const isCPU = part.type === 'cpu';
-					const newPart: PartProps = { ...part, state: isCPU || (part.connectors ?? []).length === 0
-						? 'valid' : 'disconnected' };
-					newParts.push(newPart);
-					if (isCPU) queue.push(newPart);
-				}
+		for (let part of newParts) {
+			for (let x = 0; x < part.bounds[0].length; x++) {
+				if (part.state === 'out-of-bounds') break;
+				for (let y = 0; y < part.bounds.length; y++) {
+					let bound = part.bounds[y][x];
+					let outOfBounds = (part.pos[0] + x) < 0 || (part.pos[1] + y) < 0 ||
+						(part.pos[0] + x) >= phoneSize![0] || (part.pos[1] + y) >= phoneSize![1];
 
-				for (let part of newParts) {
-					for (let x = 0; x < part.bounds[0].length; x++) {
-						if (part.state === 'out-of-bounds') break;
-						for (let y = 0; y < part.bounds.length; y++) {
-							let bound = part.bounds[y][x];
-							let outOfBounds = (part.pos[0] + x) < 0 || (part.pos[1] + y) < 0 ||
-								(part.pos[0] + x) >= phoneSize![0] || (part.pos[1] + y) >= phoneSize![1];
-
-							if ((bound === B.Outside && !outOfBounds) || (bound !== B.Outside && outOfBounds)) {
-								part.state = 'out-of-bounds';
-								break;
-							}
-						}
+					if ((bound === B.Outside && !outOfBounds) || (bound !== B.Outside && outOfBounds)) {
+						part.state = 'out-of-bounds';
+						break;
 					}
-
 				}
+			}
 
-				for (let i = 0; i < newParts.length; i++) {
-					let part = newParts[i];
+		}
 
-					for (let j = 0; j < i; j++) {
-						if (part.state == 'invalid') break;
-						let other = newParts[j];
+		for (let i = 0; i < newParts.length; i++) {
+			let part = newParts[i];
 
-						for (let posY = 0; posY < part.bounds.length; posY++) {
-							if (part.state == 'invalid') break;
-							let otherPosY = part.pos[1] + posY - other.pos[1];
-							for (let posX = 0; posX < part.bounds[0].length; posX++) {
-								let otherPosX = part.pos[0] + posX - other.pos[0];
-								if (part.bounds[posY][posX] === B.Transparent) continue;
-								if (otherPosY < 0 || otherPosY >= other.bounds.length || otherPosX < 0 || otherPosX >= other.bounds[0].length) continue;
-								if (other.bounds[otherPosY][otherPosX] != B.Transparent) {
-									part.state = 'invalid';
-									break;
-								}
-							}
+			for (let j = 0; j < i; j++) {
+				if (part.state == 'invalid') break;
+				let other = newParts[j];
+
+				for (let posY = 0; posY < part.bounds.length; posY++) {
+					if (part.state == 'invalid') break;
+					let otherPosY = part.pos[1] + posY - other.pos[1];
+					for (let posX = 0; posX < part.bounds[0].length; posX++) {
+						let otherPosX = part.pos[0] + posX - other.pos[0];
+						if (part.bounds[posY][posX] === B.Transparent) continue;
+						if (otherPosY < 0 || otherPosY >= other.bounds.length || otherPosX < 0 || otherPosX >= other.bounds[0].length) continue;
+						if (other.bounds[otherPosY][otherPosX] != B.Transparent) {
+							part.state = 'invalid';
+							break;
 						}
 					}
 				}
+			}
+		}
 
-				while (queue.length) {
-					const part = queue.shift()!;
-					closed.add(part);
-					if (part.state !== 'valid') continue;
+		while (queue.length) {
+			const part = queue.shift()!;
+			closed.add(part);
+			if (part.state !== 'valid') continue;
 
 
-					for (const connection of (part.connectors ?? [])) {
-						const otherConnectorWorld = [
-							part.pos[0] + connection[0] + positionOffsets[connection[2]][0],
-							part.pos[1] + connection[1] + positionOffsets[connection[2]][1],
-							(connection[2] + 2) % 4
-						];
+			for (const connection of (part.connectors ?? [])) {
+				const otherConnectorWorld = [
+					part.pos[0] + connection[0] + positionOffsets[connection[2]][0],
+					part.pos[1] + connection[1] + positionOffsets[connection[2]][1],
+					(connection[2] + 2) % 4
+				];
 
-						for (const other of newParts) {
-							if (closed.has(other) || other.state !== 'disconnected') continue;
+				for (const other of newParts) {
+					if (closed.has(other) || other.state !== 'disconnected') continue;
 
-							for (const otherConnection of (other.connectors ?? [])) {
-								if (otherConnection[0] + other.pos[0] === otherConnectorWorld[0] &&
-									otherConnection[1] + other.pos[1] === otherConnectorWorld[1] &&
-									otherConnection[2] === otherConnectorWorld[2]) {
+					for (const otherConnection of (other.connectors ?? [])) {
+						if (otherConnection[0] + other.pos[0] === otherConnectorWorld[0] &&
+							otherConnection[1] + other.pos[1] === otherConnectorWorld[1] &&
+							otherConnection[2] === otherConnectorWorld[2]) {
 
-									other.state = 'valid';
-									closed.add(other);
-									queue.push(other);
-									break;
-								}
-							}
+							other.state = 'valid';
+							closed.add(other);
+							queue.push(other);
+							break;
 						}
 					}
 				}
+			}
+		}
 
-				if (levelYielding === 'placement') {
-					setLevelYielding(null);
-					if (movingPart?.willRemove) setTimeout(() => handleLevelDirective({ ...movingPart.part, state: 'removed' }));
-					else setTimeout(() => handleLevelDirective({ ...newParts[movingPart!.ind] }));
-				}
-
-				return newParts;
-			});
-
+		setLevelYielding((levelYielding) => {
+			if (levelYielding !== 'placement') return levelYielding;
+			if (movingPart?.willRemove) setTimeout(() => handleLevelDirective({ ...movingPart.part, state: 'removed' }));
+			else setTimeout(() => handleLevelDirective({ ...newParts[movingPart!.ind] }));
 			return null;
-		})
-	}
+		});
 
-	function handleRotate(ind: number) {
+		setParts(newParts);
+		setMovingPart(null);
+	}, [ movingPart, parts, handleLevelDirective ]);
+
+
+	const handleRotate = useCallback((uid: string) => {
+		console.trace();
 		setParts(parts => {
 			const newParts = [ ...parts ];
-			const part = newParts[ind];
-
+			const part = newParts.find(part => part.uid === uid);
+			if (!part) return parts;
 			rotatePart(part, (part.orientation + 1) % 4);
-
 			return newParts;
 		});
-	}
+	}, []);
+
+	const rotateMovingPart = useCallback(() => setMovingPart(part => {
+		handleRotate(part!.part.uid)
+		return part;
+	}), [ handleRotate ]);
 
 	function handleCloseDialog(key?: string) {
 		setMessages([]);
@@ -361,9 +365,10 @@ export default function BuilderScene(props: Props) {
 	const totalPrice = parts.reduce((price, part) => price + part.price, 0);
 
 	return (
-		<div class='absolute left-1/2 top-1/2 w-[640px] h-[360px]' style={{
-			transform: `translate(-50%, -50%) scale(${pixelScale * 100}%)` }}>
-
+		<div class='absolute left-1/2 top-1/2 w-[640px] h-[360px]'
+		 	style={{ transform: `translate(-50%, -50%) scale(${pixelScale * 100}%)` }}
+			onContextMenu={movingPart ? rotateMovingPart : undefined}
+			>
 
 			<img src={img_desk_background} class='absolute pointer-events-none'/>
 
@@ -375,13 +380,7 @@ export default function BuilderScene(props: Props) {
 				level={blueprintsLevel}
 				onMoveStart={handleSpawn}
 				onMoveEnd={handleMoveEnd}
-				onRotate={() => {
-					setMovingPart(part => {
-						console.log(part);
-						handleRotate(part!.ind)
-						return part;
-					});
-				}}
+				// onRotate={rotateMovingPart}
 			/>
 
 			{phoneSize && <Fragment>
@@ -400,8 +399,8 @@ export default function BuilderScene(props: Props) {
 						phoneY={phoneY}
 						style={{ opacity: (part === movingPart?.part && movingPart.willRemove) ? 0 : undefined }}
 						onMoveStart={(evt) => handleMoveStart(evt, part, i, false)}
-						onMoveEnd={() => handleMoveEnd()}
-						onRotate={movingPart ? undefined : () => handleRotate(i)}
+						onMoveEnd={handleMoveEnd}
+						onRotate={movingPart ? undefined : handleRotate}
 						{...part}
 					/>
 				)}

@@ -14,7 +14,7 @@ interface Props {
 
 	onMoveStart: (evt: MouseEvent, part: PartDef) => void;
 	onMoveEnd: () => void;
-	onRotate: () => void;
+	// onRotate: () => void;
 }
 
 export default function PartSpawner(props: Props) {
@@ -93,8 +93,8 @@ export default function PartSpawner(props: Props) {
 									state='blueprint'
 									uid={i.toString()}
 									onMoveStart={(evt) => props.onMoveStart(evt, part)}
-									onMoveEnd={() => props.onMoveEnd()}
-									onRotate={() => props.onRotate()}
+									onMoveEnd={props.onMoveEnd}
+									// onRotate={() => props.onRotate()}
 								/>
 								<div class='-top-1 -left-1 w-[calc(100%+1px+0.5rem)] h-[calc(100%+1px+0.5rem)] absolute opacity-25 pointer-events-none' style={{
 									backgroundImage: `url(${img_blueprint_grid})`,

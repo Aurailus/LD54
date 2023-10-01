@@ -1,5 +1,5 @@
 import { h } from 'preact';
-import { useRef } from 'preact/hooks';
+import { useCallback, useLayoutEffect, useRef } from 'preact/hooks';
 import { forwardRef } from 'preact/compat';
 
 import { CELL_SIZE } from '../Constants';
@@ -34,8 +34,8 @@ interface Props extends PartProps {
 	phoneY: number;
 
 	onMoveStart?: (evt: MouseEvent) => void;
-	onMoveEnd?: (evt: MouseEvent) => void;
-	onRotate?: () => void;
+	onMoveEnd?: (evt: MouseEvent, uid: string) => void;
+	onRotate?: (uid: string) => void;
 	setRef?: (elem: HTMLElement) => void;
 
 
@@ -49,7 +49,7 @@ export default function Part(props: Props) {
 		contextMenuCallback: (evt: MouseEvent) => void;
 	 } | null>(null);
 
-	function handleMouseUp(evt: MouseEvent) {
+	const handleMouseUp = useCallback((evt: MouseEvent) => {
 		evt.preventDefault();
 		evt.stopPropagation();
 		if (evt.button !== 0) return;
@@ -61,16 +61,16 @@ export default function Part(props: Props) {
 
 		callbacks.current = null;
 
-		props.onMoveEnd?.(evt);
-	}
+		props.onMoveEnd?.(evt, props.uid);
+	}, [ props.onMoveEnd, props.uid ]);
 
-	function handleMouseDown(evt: MouseEvent) {
+	const handleRightClick = useCallback((evt: MouseEvent) => {
 		evt.preventDefault();
 		evt.stopPropagation();
-		if (evt.button !== 0) return;
+		props.onRotate?.(props.uid);
+	}, [ props.onRotate, props.uid ]);
 
-		props.onMoveStart?.(evt);
-
+	function bindMoveCallbacks() {
 		if (callbacks.current) {
 			window.removeEventListener('mouseup', callbacks.current.mouseUpCallback);
 			window.removeEventListener('contextmenu', callbacks.current.contextMenuCallback);
@@ -85,11 +85,20 @@ export default function Part(props: Props) {
 		window.addEventListener('contextmenu', callbacks.current.contextMenuCallback);
 	}
 
-	function handleRightClick(evt: MouseEvent) {
+	useLayoutEffect(() => {
+		if (callbacks.current) bindMoveCallbacks();
+	}, [ handleMouseUp, handleRightClick ])
+
+	function handleMouseDown(evt: MouseEvent) {
 		evt.preventDefault();
 		evt.stopPropagation();
-		props.onRotate?.();
+		if (evt.button !== 0) return;
+
+		props.onMoveStart?.(evt);
+
+		bindMoveCallbacks();
 	}
+
 
 	return (
 		<div
