@@ -1,33 +1,20 @@
 import { h } from 'preact';
+import { useRef } from 'preact/hooks';
 import { forwardRef } from 'preact/compat';
 
-import { CELL_SIZE } from './Constants';
-import { useRef } from 'preact/hooks';
-import { classes, range } from './Util';
+import { CELL_SIZE } from '../Constants';
+import { classes, range } from '../Util';
+import { PartBound, PartDef } from '../Parts';
 
-export type PartType = 'storage' | 'cpu' | 'battery' | 'wire' | 'camera' | 'input' | 'power';
-
-export type PartState = 'valid' | 'invalid' | 'disconnected' | 'dragging' | 'drag-indicator' | 'out-of-bounds';
-
-export enum PartBound {
-	Solid,
-	Transparent,
-	Outside
-}
-
-export interface PartDef {
-	model: string;
-
-	type: PartType;
-
-	img: string | string[];
-
-	/* 2d array of occupied cells. */
-	bounds: PartBound[][];
-
-	/** array of tuples where [0] = x, [1] = y, [2] = orientation */
-	connectors: [ number, number, number ][];
-}
+export type PartState =
+	'valid' |
+	'invalid' |
+	'disconnected' |
+	'dragging' |
+	'drag-indicator' |
+	'remove-indicator' |
+	'out-of-bounds' |
+	'blueprint';
 
 export interface PartProps extends PartDef {
 	state: PartState;
@@ -36,6 +23,10 @@ export interface PartProps extends PartDef {
 
 	/* 0: 0deg, 1: 90deg, 2: 180deg, 3: 270deg */
 	orientation: number;
+
+	immobile?: boolean;
+
+	uid: string;
 }
 
 interface Props extends PartProps {
@@ -103,34 +94,48 @@ export default function Part(props: Props) {
 	return (
 		<div
 			ref={(elem) => props.setRef?.(elem as HTMLElement)}
-			class={classes('absolute pointer-events-none',
-				props.state === 'drag-indicator' && 'animate-part-moving', props.class)}
+			class={classes(props.state === 'blueprint' ? 'relative' : 'absolute', 'pointer-events-none',
+				(props.state === 'drag-indicator' || props.state === 'remove-indicator') && 'animate-part-moving', props.class)}
 			style={{
 				left: `${props.phoneX + props.pos[0] * CELL_SIZE}px`,
 				top: `${props.phoneY + props.pos[1] * CELL_SIZE}px`,
 				width: `${props.bounds[0].length * CELL_SIZE}px`,
 				height:	`${props.bounds.length * CELL_SIZE}px`,
+				filter: props.immobile
+					? 'drop-shadow(1px 1px 0 #ff80a4) drop-shadow(-1px 1px 0 #ff80a4) drop-shadow(1px -1px 0 #ff80a4) drop-shadow(-1px -1px 0 #ff80a4)'
+					: (props.state === 'valid' || props.state === 'disconnected' || props.state === 'dragging')
+						? 'drop-shadow(0px 2px 0 rgb(0 0 0 / 20%))'
+						: props.state === 'drag-indicator'
+							? 'drop-shadow(0px 3px 1px rgb(0 0 0 / 20%))'
+							: '',
+				zIndex: (props.state === 'dragging' || props.state === 'invalid')
+					? 50
+					: props.state !== 'blueprint'
+						? props.pos[1] + 20
+						: undefined,
 				...(props.style ?? {})
 			}}
-			onMouseDown={handleMouseDown}
-			onContextMenu={props.onRotate ? handleRightClick : undefined}
+			onMouseDown={props.immobile ? undefined : handleMouseDown}
+			onContextMenu={(!props.immobile && props.onRotate) ? handleRightClick : undefined}
 		>
 			<img
-				class={classes('absolute transition duration-100 left-1/2 top-1/2')}
+				class={classes(props.state !== 'blueprint' && 'absolute left-1/2 top-1/2', 'transition duration-100')}
 				style={{
-					transform: `translate(-50%, -50%) rotate(${props.orientation * 90}deg)`,
+					transform: props.state !== 'blueprint' ? `translate(-50%, -50%) rotate(${props.orientation * 90}deg)` : '',
 					filter:
-					// props.state === 'disconnected'
-						// ? 'grayscale(100%) contrast(0.7) brightness(1.3)'
-						// :
-						props.state === 'invalid'
+						props.state === 'invalid' || props.state === 'remove-indicator'
 							? 'grayscale(100%) sepia(100%) contrast(0.8) brightness(1.6) saturate(500%) hue-rotate(324deg)'
-							: '',
-					opacity: props.state === 'invalid' || props.state === 'dragging'
+							: props.state === 'blueprint'
+								? 'grayscale(100%) sepia(100%) contrast(1.25) brightness(1.8) saturate(150%)'
+								: '',
+					opacity: props.state === 'invalid'
 						? 0.8
-						: props.state === 'disconnected' || props.state === 'out-of-bounds'
+						: props.state === 'disconnected' || props.state === 'out-of-bounds' || props.state === 'dragging'
 							? 0.6
-							: ''
+							: props.state === 'blueprint'
+								? 0.7
+								: '',
+					mixBlendMode: props.state === 'blueprint' ? 'luminosity' : ''
 				}}
 				src={Array.isArray(props.img) ? props.img[props.orientation] : props.img}
 			/>

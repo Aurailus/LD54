@@ -1,6 +1,6 @@
 import { h, render } from 'preact';
 
-import App from './App';
+import App from './components/App';
 
 import './Style.pcss';
 
