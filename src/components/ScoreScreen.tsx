@@ -2,6 +2,7 @@ import { h } from 'preact';
 
 import img_desk_background from '@res/desk_background.png';
 import img_score_phone from '@res/score_phone.png';
+import { SCREEN_HEIGHT, SCREEN_WIDTH } from '../Constants';
 
 interface Props {
 	pixelScale: number;
@@ -27,7 +28,8 @@ export default function ScoreScreen(props: Props) {
 		<div class='absolute left-1/2 top-1/2 w-[640px] h-[360px]'
 		 	style={{ transform: `translate(-50%, -50%) scale(${props.pixelScale * 100}%)` }}
 			>
-			<img src={img_desk_background} class='absolute inset-0'/>
+			<div style={{ backgroundImage: `url(${img_desk_background})`, width: SCREEN_WIDTH * 3, height: SCREEN_HEIGHT * 3, top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }} class='absolute pointer-events-none'/>
+
 			<div class='animate-slide-in w-full h-full'>
 				<div class='absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-max h-max'>
 					<img src={img_score_phone} class='[filter:drop-shadow(0px_8px_6px_rgb(0_0_0/50%))]'/>
